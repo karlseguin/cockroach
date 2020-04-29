@@ -536,7 +536,7 @@ func makeSQLClient(appName string, defaultMode defaultSQLDb) (*sqlConn, error) {
 	// Insecure connections are insecure and should never see a password. Reject
 	// one that may be present in the URL already.
 	if options.Get("sslmode") == "disable" {
-		// +vtfb[insecure]: Allow password to be set (or promppt) even when insecure
+		// +vtfb[insecure]: Allow password to be set (or prompt) even when insecure
 		if _, pwdSet := baseURL.User.Password(); !pwdSet {
 			pwd, err := security.PromptForPassword()
 			if err != nil {
