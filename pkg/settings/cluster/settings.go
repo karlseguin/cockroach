@@ -8,6 +8,9 @@
 // by the Apache License, Version 2.0, included in the file
 // licenses/APL.txt.
 
+// The fork found at github.com/karlseguin/cockroach has modified this file.
+// Search for "+vtfb" to see what has changed.
+
 package cluster
 
 import (
@@ -80,7 +83,8 @@ type Settings struct {
 
 // TelemetryOptOut is a place for controlling whether to opt out of telemetry or not.
 func TelemetryOptOut() bool {
-	return envutil.EnvOrDefaultBool("COCKROACH_SKIP_ENABLING_DIAGNOSTIC_REPORTING", false)
+	// +vtfb[telemetry]: the default was changed from false to true
+	return envutil.EnvOrDefaultBool("COCKROACH_SKIP_ENABLING_DIAGNOSTIC_REPORTING", true)
 }
 
 // IsCPUProfiling returns true if a pprofui CPU profile is being recorded. This can
