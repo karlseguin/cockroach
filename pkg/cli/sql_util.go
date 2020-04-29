@@ -8,6 +8,9 @@
 // by the Apache License, Version 2.0, included in the file
 // licenses/APL.txt.
 
+// The fork found at github.com/karlseguin/cockroach has modified this file.
+// Search for "+vtfb" to see what has changed.
+
 package cli
 
 import (
@@ -533,8 +536,13 @@ func makeSQLClient(appName string, defaultMode defaultSQLDb) (*sqlConn, error) {
 	// Insecure connections are insecure and should never see a password. Reject
 	// one that may be present in the URL already.
 	if options.Get("sslmode") == "disable" {
-		if _, pwdSet := baseURL.User.Password(); pwdSet {
-			return nil, errors.Errorf("cannot specify a password in URL with an insecure connection")
+		// +vtfb[insecure]: Allow password to be set (or promppt) even when insecure
+		if _, pwdSet := baseURL.User.Password(); !pwdSet {
+			pwd, err := security.PromptForPassword()
+			if err != nil {
+				return nil, err
+			}
+			baseURL.User = url.UserPassword(baseURL.User.Username(), pwd)
 		}
 	} else {
 		if baseURL.User.Username() == security.RootUser {

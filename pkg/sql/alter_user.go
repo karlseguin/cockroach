@@ -8,6 +8,9 @@
 // by the Apache License, Version 2.0, included in the file
 // licenses/APL.txt.
 
+// The fork found at github.com/karlseguin/cockroach has modified this file.
+// Search for "+vtfb" to see what has changed.
+
 package sql
 
 import (
@@ -71,10 +74,12 @@ func (n *alterUserSetPasswordNode) startExec(params runParams) error {
 			"user %s cannot use password authentication", security.RootUser)
 	}
 
-	if len(hashedPassword) > 0 && params.extendedEvalCtx.ExecCfg.RPCContext.Insecure {
-		return pgerror.New(pgcode.InvalidPassword,
-			"cluster in insecure mode; user cannot use password authentication")
-	}
+	// +vtfb[insecure]: Allow users to be altered with a password even in --insecure
+	//
+	// if len(hashedPassword) > 0 && params.extendedEvalCtx.ExecCfg.RPCContext.Insecure {
+	// 	return pgerror.New(pgcode.InvalidPassword,
+	// 		"cluster in insecure mode; user cannot use password authentication")
+	// }
 
 	n.run.rowsAffected, err = params.extendedEvalCtx.ExecCfg.InternalExecutor.Exec(
 		params.ctx,

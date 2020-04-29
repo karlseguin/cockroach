@@ -8,6 +8,9 @@
 // by the Apache License, Version 2.0, included in the file
 // licenses/APL.txt.
 
+// The fork found at github.com/karlseguin/cockroach has modified this file.
+// Search for "+vtfb" to see what has changed.
+
 package sql
 
 import (
@@ -74,9 +77,11 @@ func (n *CreateUserNode) startExec(params runParams) error {
 		return err
 	}
 
-	if len(hashedPassword) > 0 && params.extendedEvalCtx.ExecCfg.RPCContext.Insecure {
-		return errors.New("cluster in insecure mode; user cannot use password authentication")
-	}
+	// +vtfb[insecure]: Allow users to be created with a password even in --insecure
+	//
+	// if len(hashedPassword) > 0 && params.extendedEvalCtx.ExecCfg.RPCContext.Insecure {
+	// 	return errors.New("cluster in insecure mode; user cannot use password authentication")
+	// }
 
 	// Reject the "public" role. It does not have an entry in the users table but is reserved.
 	if normalizedUsername == sqlbase.PublicRole {

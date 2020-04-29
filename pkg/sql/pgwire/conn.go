@@ -8,6 +8,9 @@
 // by the Apache License, Version 2.0, included in the file
 // licenses/APL.txt.
 
+// The fork found at github.com/karlseguin/cockroach has modified this file.
+// Search for "+vtfb" to see what has changed.
+
 package pgwire
 
 import (
@@ -1550,6 +1553,21 @@ func (c *conn) handleAuthentication(
 		}
 
 		authenticationHook, err := methodFn(ac, tlsState, insecure, hashedPassword, execCfg, hbaEntry)
+		if err != nil {
+			return sendError(err)
+		}
+		if err := authenticationHook(c.sessionArgs.User, true /* public */); err != nil {
+			return sendError(err)
+		}
+	} else if c.sessionArgs.User == security.RootUser { // +vtfb[insecure]
+		// +vtfb[insecure]: Allow root to login without a password from localhost
+		addr, _, _ := net.SplitHostPort(c.conn.RemoteAddr().String())
+		if addr != "127.0.0.1" {
+			return sendError(errors.New("root user can only connect from localhost"))
+		}
+	} else { // +vtfb[insecure]
+		// +vtfb[insecure]: Run through the normal password auth, but tell it that we're in secure mode
+		authenticationHook, err := authPassword(ac, tls.ConnectionState{}, false, hashedPassword, execCfg, nil)
 		if err != nil {
 			return sendError(err)
 		}
